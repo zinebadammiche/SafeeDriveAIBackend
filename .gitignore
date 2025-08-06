@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+credentials.json
+data_storage/
+output/
+temp_files/
