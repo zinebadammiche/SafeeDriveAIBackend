@@ -9,7 +9,7 @@ from easyocr import Reader
 import json
 
 # ========== CONFIG ==========
-MODEL_WEIGHTS = "../best.pt"
+MODEL_WEIGHTS = "best.pt"
 KEY_FILE = "secret.key"
 DATA_FOLDER = "data_storage"
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".gif"}
