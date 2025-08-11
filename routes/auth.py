@@ -12,8 +12,7 @@ from werkzeug.utils import secure_filename
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.discovery import build
 
-from app import update_global_metadata
-
+ 
 auth_bp = Blueprint("auth", __name__)
 
 # Allow HTTP for local testing
@@ -308,6 +307,8 @@ def upload_folder_to_drive(folder_name):
 @auth_bp.route("/save_safe_file", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def save_safe_file():
+    from app import update_global_metadata
+
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
