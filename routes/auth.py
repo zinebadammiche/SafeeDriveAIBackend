@@ -2,7 +2,7 @@ import json
 import shutil
 import tempfile
 import traceback
-from flask import Blueprint, redirect, request, session, url_for, jsonify
+from flask import Blueprint, redirect, request, send_file, session, url_for, jsonify
 from flask_cors import cross_origin
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.discovery import build
 
- 
+from app import update_global_metadata
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -51,7 +51,6 @@ def update_metadata(file_name, status="unverified", encrypted=False, flags=0):
     Update or create metadata.json entry for a file.
     file_name: name without extension
     """
-    from app import update_global_metadata
     metadata_path = os.path.join("data_storage", "metadata.json")
 
     # Load existing metadata
@@ -309,7 +308,6 @@ def upload_folder_to_drive(folder_name):
 @auth_bp.route("/save_safe_file", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def save_safe_file():
-    from app import update_global_metadata
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
@@ -419,4 +417,47 @@ def upload_single_to_drive():
 
     except Exception as e:
         traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@auth_bp.route("/download/<file_id>", methods=["GET"])
+@cross_origin(supports_credentials=True)
+def download_drive_file(file_id):
+    creds_data = session.get("credentials")
+    if not creds_data:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    try:
+        credentials = Credentials(
+            token=creds_data["token"],
+            refresh_token=creds_data["refresh_token"],
+            token_uri=creds_data["token_uri"],
+            client_id=creds_data["client_id"],
+            client_secret=creds_data["client_secret"],
+            scopes=creds_data["scopes"]
+        )
+
+        service = build("drive", "v3", credentials=credentials)
+
+        # Get file metadata
+        file_meta = service.files().get(fileId=file_id, fields="name, mimeType").execute()
+
+        # Download file content
+        from googleapiclient.http import MediaIoBaseDownload
+        import io
+        fh = io.BytesIO()
+        request = service.files().get_media(fileId=file_id)
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+        while done is False:
+            status, done = downloader.next_chunk()
+
+        fh.seek(0)
+        return send_file(
+            fh,
+            as_attachment=True,
+            download_name=file_meta["name"],
+            mimetype=file_meta["mimeType"]
+        )
+
+    except Exception as e:
         return jsonify({"error": str(e)}), 500

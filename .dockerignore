@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.git/
+.gitignore
+venv/
+env/
+*.egg-info/
+*.pkl
+*.h5
+data/
+models/
+*.whl
+*.tar.gz

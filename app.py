@@ -682,7 +682,7 @@ def serve_keys_file(filename):
     return send_from_directory(DATA_FOLDER, filename)
 
 
-if __name__ == "__main__":
+if __name__ == "_main_":
     print("🔐 Serveur de chiffrement et masquage démarré")
     print("📝 Endpoints disponibles:")
     print("  - POST /encrypt  : Chiffrer une image")
@@ -690,7 +690,4 @@ if __name__ == "__main__":
     print("  - POST /preview  : Prévisualiser détections")
     print("  - POST /upload   : Détection simple (zones)")
     print("  - POST /mask     : Masquer zones détectées")
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host="0.0.0.0", port=port)   
-
-
+    app.run(debug=True, host="0.0.0.0", port=5000)
