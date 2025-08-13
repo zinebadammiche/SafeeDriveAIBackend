@@ -15,6 +15,8 @@ from googleapiclient.discovery import build
  
 auth_bp = Blueprint("auth", __name__)
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
 # Allow HTTP for local testing
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -138,7 +140,7 @@ def callback():
 
         }
 
-        return redirect("http://localhost:5173")  
+        return redirect(FRONTEND_URL)  
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

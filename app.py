@@ -40,12 +40,42 @@ import tenseal as ts
 
 load_dotenv()
 
+ 
+ 
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+USE_HTTPS = os.getenv("USE_HTTPS", "false").lower() == "true"  # mets true en prod (https)
+
 app = Flask(__name__)
-app.secret_key = os.urandom(24) 
-CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
+
+# 1) Clé stable (pas os.urandom) -> lis depuis l'env
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+if not app.secret_key:
+    # mieux: faire échouer le boot pour ne pas oublier de la définir
+    raise RuntimeError("FLASK_SECRET_KEY is not set")
+
+# 2) CORS + cookies
+CORS(
+    app,
+    origins=[FRONTEND_URL],
+    supports_credentials=True
+)
+
+if os.getenv("USE_HTTPS","false").lower()=="true":
+    app.config.update(
+        SESSION_COOKIE_SAMESITE="None",
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_DOMAIN=os.getenv("BACKEND_DOMAIN")
+    )
+
+# 4) (Optionnel) préciser le domaine si nécessaire
+BACKEND_DOMAIN = os.getenv("BACKEND_DOMAIN")  # ex: ec2-13-39-110-169.eu-west-3.compute.amazonaws.com
+if BACKEND_DOMAIN:
+    app.config["SESSION_COOKIE_DOMAIN"] = BACKEND_DOMAIN
 
 DATA_FOLDER = "data_storage"
 os.makedirs(DATA_FOLDER, exist_ok=True)
+ 
 
 
 # Charge le modèle de détection de visages OpenCV
@@ -682,7 +712,7 @@ def serve_keys_file(filename):
     return send_from_directory(DATA_FOLDER, filename)
 
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     print("🔐 Serveur de chiffrement et masquage démarré")
     print("📝 Endpoints disponibles:")
     print("  - POST /encrypt  : Chiffrer une image")
@@ -690,4 +720,10 @@ if __name__ == "_main_":
     print("  - POST /preview  : Prévisualiser détections")
     print("  - POST /upload   : Détection simple (zones)")
     print("  - POST /mask     : Masquer zones détectées")
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(
+        debug=True, 
+        host="0.0.0.0", 
+        port=port,
+        use_reloader=False 
+    )
