@@ -74,8 +74,8 @@ If you would like to try SafeDrive AI during this phase:
   - **EasyOCR** for text extraction from images  
   - **Presidio + spaCy** for NLP-based sensitive data detection
 - **Encryption**:  
-  - **AES + RSA hybrid** for documents  
-  - **CKKS homomorphic encryption (TenSEAL)** for images
+  - **AES**   for images
+  - **CKKS homomorphic encryption (TenSEAL)** for documents 
 - **Cloud Integration**: Google Drive API
 - **File Handling**: Secure temporary storage, automatic cleanup
 - **Async/Cache (optional)**: Redis (for task state, rate limiting, or caching)
